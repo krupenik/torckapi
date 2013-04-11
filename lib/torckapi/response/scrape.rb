@@ -11,6 +11,8 @@ module Torckapi
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Scrape] response
       def self.from_udp info_hashes, data
+        return new({}) unless data
+
         new Hash[info_hashes.zip(data.unpack('a12' * (info_hashes.count)).map { |i| Hash[[:seeders, :completed, :leechers].zip i.unpack('L>3').map(&:to_i)] })]
       end
 

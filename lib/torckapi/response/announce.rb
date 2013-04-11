@@ -19,6 +19,8 @@ module Torckapi
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Announce] response
       def self.from_udp info_hash, data
+        return new(info_hash, nil, nil, []) unless data
+
         leechers, seeders = data[0..7].unpack('L>2')
 
         new info_hash, leechers, seeders, peers_from_compact(data[8..-1], leechers + seeders)
@@ -30,6 +32,8 @@ module Torckapi
       # @param compact [true, false] is peer data in compact format?
       # @return [Torckapi::Response::Announce] response
       def self.from_http info_hash, data, compact=true
+        return new(info_hash, nil, nil, []) unless data
+
         bdecoded_data = BEncode.load(data)
         leechers, seeders = bdecoded_data.values_at("incomplete", "complete")
 
