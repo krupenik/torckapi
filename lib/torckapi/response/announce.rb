@@ -23,7 +23,7 @@ module Torckapi
 
         leechers, seeders = data[0..7].unpack('L>2')
 
-        new info_hash, leechers, seeders, peers_from_compact(data[8..-1], leechers + seeders)
+        new info_hash, leechers, seeders, peers_from_compact(data[8..-1])
       end
 
       # Construct response object from http response data
@@ -37,7 +37,7 @@ module Torckapi
         bdecoded_data = BEncode.load(data)
         leechers, seeders = bdecoded_data.values_at("incomplete", "complete")
 
-        new info_hash, leechers, seeders, peers_from_compact(bdecoded_data["peers"], [50, leechers + seeders].min)
+        new info_hash, leechers, seeders, peers_from_compact(bdecoded_data["peers"])
       end
 
       private
@@ -49,8 +49,8 @@ module Torckapi
         @peers = peers
       end
 
-      def self.peers_from_compact data, peer_count
-        data.unpack('a6' * peer_count).map { |i| [IPAddr.ntop(i[0..3]), i[4..5].unpack('S>')[0]] }
+      def self.peers_from_compact data
+        data.unpack('a6' * (data.length / 6)).map { |i| [IPAddr.ntop(i[0..3]), i[4..5].unpack('S>')[0]] }
       end
     end
   end
