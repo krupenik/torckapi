@@ -46,7 +46,6 @@ module Torckapi
         @connection_id = [0x41727101980].pack('Q>')
         response_body = communicate(0)[0] # connect
         @connection_id = response_body[8..15]
-        puts "connection_id = #{@connection_id.inspect}" if Torckapi::debug
       end
       
       def communicate action, data=nil
@@ -59,10 +58,8 @@ module Torckapi
         response = nil
         begin
           Timeout::timeout(@options[:timeout], CommunicationTimeoutError) do
-            puts "--> #{packet.inspect}" if Torckapi::debug
             @socket.send(packet, 0, @url.host, @url.port)
             response = @socket.recvfrom(65536)
-            puts "<-- #{response.inspect}" if Torckapi::debug
             raise TransactionIdMismatchError if transaction_id != response[0][4..7]
             @communicated_at = Time.now
           end

@@ -7,16 +7,6 @@ require 'torckapi/response/announce'
 require 'torckapi/response/scrape'
 
 module Torckapi
-  @@debug = false
-  
-  def self.debug
-    @@debug
-  end
-  
-  def self.debug= debug
-    @@debug = !!debug
-  end
-  
   # Creates a tracker interface instance
   # @param tracker_url [String] tracker announce url
   # @param options [Hash] defaults to \\{timeout: 15, tries: 3}
