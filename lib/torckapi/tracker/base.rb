@@ -1,6 +1,6 @@
 module Torckapi
   module Tracker
-    
+
     # Public interface for torrent trackers
     class Base
       # Announce Request
@@ -16,9 +16,9 @@ module Torckapi
       def scrape info_hashes=[]
         raise Torckapi::InvalidInfohashError if [*info_hashes].any? { |i| i !~ /\A[0-9a-f]{40}\z/i }
       end
-      
+
       private
-      
+
       def initialize url, options={}
         @url = url
         @options = {timeout: 15, tries: 3}.merge(options)
