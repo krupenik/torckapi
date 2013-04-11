@@ -56,6 +56,7 @@ module Torckapi
             @socket.send(packet, 0, @url.host, @url.port)
             response = @socket.recvfrom(65536)
             raise TransactionIdMismatchError if transaction_id != response[0][4..7]
+            raise Torckapi::Tracker::Error.new(response[8..-1]) if 3 == response[0][0..3].unpack('L>')[0] # tracker sent error
             @communicated_at = Time.now
           end
         rescue CommunicationTimeoutError
