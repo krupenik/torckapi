@@ -59,7 +59,11 @@ module Torckapi
             @communicated_at = Time.now
           end
         rescue CommunicationTimeoutError
-          retry if (tries += 1) <= @options[:tries]
+          if (tries += 1) <= @options[:tries]
+            retry
+          else
+            raise CommunicationFailedError
+          end
         end
 
         response

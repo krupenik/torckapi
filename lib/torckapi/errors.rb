@@ -5,6 +5,8 @@ module Torckapi
   module Tracker
     class Error < Torckapi::Error; end
     class InvalidSchemeError < Error; end
-    class CommunicationTimeoutError < Error; end
+    class CommunicationError < Error; end
+    class CommunicationFailedError < CommunicationError; end
+    class CommunicationTimeoutError < CommunicationError; end
   end
 end
