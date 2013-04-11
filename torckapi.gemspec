@@ -1,4 +1,5 @@
-require_relative 'lib/torckapi/version'
+$:.unshift "lib"
+require 'torckapi/version'
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Dennis Krupenik"]
@@ -12,9 +13,10 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "torckapi"
   gem.require_paths = ["lib"]
-  gem.version       = Torrent::Scraper::VERSION
+  gem.version       = Torckapi::VERSION
 
   gem.add_development_dependency 'rake'
-  gem.add_development_dependency 'minitest'  
+  gem.add_development_dependency 'minitest'
+
   gem.add_runtime_dependency 'bencode'
 end
