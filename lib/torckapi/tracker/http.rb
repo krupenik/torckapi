@@ -1,5 +1,5 @@
 require 'net/http'
-require_relative 'base'
+require 'torckapi/tracker/base'
 
 module Torckapi
   module Tracker

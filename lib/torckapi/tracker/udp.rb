@@ -1,7 +1,7 @@
 require 'socket'
 require 'timeout'
 require 'securerandom'
-require_relative 'base'
+require 'torckapi/tracker/base'
 
 module Torckapi
   module Tracker
