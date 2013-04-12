@@ -21,7 +21,7 @@ module Torckapi
       def self.from_udp info_hash, data
         raise ArgumentError, "info_hash cannot be nil" if info_hash.nil?
         raise ArgumentError, "data cannot be nil" if data.nil?
-        new info_hash, *data[4..11].unpack('L>2'), peers_from_compact(data[12..-1])
+        new info_hash, *data[4..11].unpack('L>2'), peers_from_compact(data[12..-1] || '')
       end
 
       # Construct response object from http response data
@@ -30,6 +30,8 @@ module Torckapi
       # @param compact [true, false] is peer data in compact format?
       # @return [Torckapi::Response::Announce] response
       def self.from_http info_hash, data, compact=true
+        raise ArgumentError, "info_hash cannot be nil" if info_hash.nil?
+        raise ArgumentError, "data cannot be nil" if data.nil?
         bdecoded_data = BEncode.load(data)
         new info_hash, *bdecoded_data.values_at("incomplete", "complete"), peers_from_compact(bdecoded_data["peers"])
       end
@@ -44,6 +46,7 @@ module Torckapi
       end
 
       def self.peers_from_compact data
+        # ipv4 address + tcp/udp port = 6 bytes
         data.unpack('a6' * (data.length / 6)).map { |i| [IPAddr.ntop(i[0..3]), i[4..5].unpack('S>')[0]] }
       end
     end

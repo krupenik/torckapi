@@ -13,7 +13,8 @@ module Torckapi
       def self.from_udp info_hashes, data
         raise ArgumentError, "info_hashes cannot be nil" if info_hashes.nil?
         raise ArgumentError, "data cannot be nil" if data.nil?
-        new Hash[info_hashes.zip(data.unpack('a12' * (info_hashes.count)).map { |i| Hash[[:seeders, :completed, :leechers].zip i.unpack('L>3').map(&:to_i)] })]
+        raise ArgumentError, "data size invalid" if data.length != info_hashes.count * 12
+        new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| Hash[[:seeders, :completed, :leechers].zip i.unpack('L>3').map(&:to_i)] })]
       end
 
       private

@@ -28,18 +28,23 @@ module Torckapi
         connect
         response = communicate action, data
 
+        raise CommunicationFailedError if response.nil?
+
         begin
           case response[0][0..3].unpack('L>')[0] # action
           when 1
+            raise AnnounceFailedError if 20 > response[0].length
             Torckapi::Response::Announce.from_udp(*args, response[0][8..-1])
           when 2
+            raise ScrapeFailedError if 8 > response[0].length
             Torckapi::Response::Scrape.from_udp(*args, response[0][8..-1])
           when 3
+            raise CommunicationFailedError if 8 > response[0].length
             Torckapi::Response::Error.from_udp(*args, response[0][8..-1])
           end
         rescue Torckapi::Response::ArgumentError => e
-          puts "Error: #{e.inspect}"
-          puts "Response: #{response.inspect}"
+          $stderr.puts "Error: #{e.inspect}"
+          $stderr.puts "Response: #{response.inspect}"
           raise CommunicationFailedError
         end
       end
@@ -56,8 +61,9 @@ module Torckapi
         return if @connection_id && @communicated_at.to_i >= Time.now.to_i - CONNECTION_TIMEOUT
 
         @connection_id = [0x41727101980].pack('Q>')
-        response_body = communicate(0)[0] # connect
-        @connection_id = response_body[8..15]
+        response = communicate 0 # connect
+        raise ConnectionFailedError if response.nil? or 16 > response[0].length
+        @connection_id = response[0][8..15]
       end
 
       def communicate action, data=nil
@@ -68,6 +74,7 @@ module Torckapi
 
         tries = 0
         response = nil
+
         begin
           Timeout::timeout(@options[:timeout], CommunicationTimeoutError) do
             @socket.send(packet, 0, @url.host, @url.port)
@@ -76,11 +83,8 @@ module Torckapi
             @communicated_at = Time.now
           end
         rescue CommunicationTimeoutError
-          if (tries += 1) <= @options[:tries]
-            retry
-          else
-            raise CommunicationFailedError
-          end
+          retry if (tries += 1) <= @options[:tries]
+          raise CommunicationFailedError
         end
 
         response
