@@ -11,11 +11,12 @@ module Torckapi
         super info_hash
 
         @url.query ||= ""
-        @url.query += "info_hash=%s&num_want=500" % URI.encode([info_hash].pack('H*'))
+        @url.query += "info_hash=%s" % URI.encode([info_hash].pack('H*'))
 
         Torckapi::Response::Announce.from_http info_hash, Net::HTTP.get(@url)
       end
 
+      # (see Base#scrape)
       def scrape info_hashes=[]
         super info_hashes
 
