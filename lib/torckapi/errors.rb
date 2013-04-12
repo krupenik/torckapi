@@ -9,4 +9,9 @@ module Torckapi
     class CommunicationFailedError < CommunicationError; end
     class CommunicationTimeoutError < CommunicationError; end
   end
+
+  module Response
+    class Error < Torckapi::Error; end
+    class ArgumentError < Error; end
+  end
 end

@@ -28,13 +28,19 @@ module Torckapi
         connect
         response = communicate action, data
 
-        case response[0][0..3].unpack('L>')[0] # action
-        when 1
-          Torckapi::Response::Announce.from_udp(*args, response[0][8..-1])
-        when 2
-          Torckapi::Response::Scrape.from_udp(*args, response[0][8..-1])
-        when 3
-          Torckapi::Response::Error.from_udp(*args, response[0][8..-1])
+        begin
+          case response[0][0..3].unpack('L>')[0] # action
+          when 1
+            Torckapi::Response::Announce.from_udp(*args, response[0][8..-1])
+          when 2
+            Torckapi::Response::Scrape.from_udp(*args, response[0][8..-1])
+          when 3
+            Torckapi::Response::Error.from_udp(*args, response[0][8..-1])
+          end
+        rescue Torckapi::Response::ArgumentError => e
+          puts "Error: #{e.inspect}"
+          puts "Response: #{response.inspect}"
+          raise CommunicationFailedError
         end
       end
 

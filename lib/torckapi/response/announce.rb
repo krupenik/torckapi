@@ -19,6 +19,8 @@ module Torckapi
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Announce] response
       def self.from_udp info_hash, data
+        raise ArgumentError, "info_hash cannot be nil" if info_hash.nil?
+        raise ArgumentError, "data cannot be nil" if data.nil?
         new info_hash, *data[4..11].unpack('L>2'), peers_from_compact(data[12..-1])
       end
 
