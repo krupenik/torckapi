@@ -9,6 +9,8 @@ module Torckapi
     class CommunicationError < Error; end
     class CommunicationFailedError < CommunicationError; end
     class CommunicationTimeoutError < CommunicationError; end
+    class MalformedResponseError < CommunicationError; end
+    class TransactionIdMismatchError < CommunicationError; end
   end
 
   module Response

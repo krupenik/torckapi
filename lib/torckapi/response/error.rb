@@ -14,7 +14,7 @@ module Torckapi
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Error] response
       def self.from_udp info_hashes, data
-        new info_hashes, data
+        new(info_hashes, data || "")
       end
 
       def info_hash

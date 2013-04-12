@@ -9,26 +9,20 @@ module Torckapi
     # Implementation of http://www.bittorrent.org/beps/bep_0015.html
     class UDP < Base
       CONNECTION_TIMEOUT = 60
-
-      # index = action (connect, announce, scrape, error)
-      # [response class, minimum response length]
-      RESPONSES = [
-        [nil, 16],
-        [Torckapi::Response::Announce, 20],
-        [Torckapi::Response::Scrape, 8],
-        [Torckapi::Response::Error, 8]
-      ].freeze
+      REQUEST_ACTIONS = [Connect = 0, Announce = 1, Scrape = 2].freeze
+      RESPONSE_CLASSES = [nil, Torckapi::Response::Announce, Torckapi::Response::Scrape, Torckapi::Response::Error].freeze
+      RESPONSE_MIN_LENGTHS = [16, 20, 8, 8].freeze
 
       # (see Base#announce)
-      def announce info_hash
+      def announce info_hash, peer_id=SecureRandom.random_bytes(20)
         super info_hash
-        perform_request 1, announce_request_data(info_hash), info_hash
+        perform_request Announce, announce_request_data(info_hash, peer_id), info_hash
       end
 
       # (see Base#scrape)
       def scrape info_hashes=[]
         super info_hashes
-        perform_request 2, scrape_request_data(info_hashes), info_hashes
+        perform_request Scrape, scrape_request_data(info_hashes), info_hashes
       end
 
       private
@@ -37,21 +31,11 @@ module Torckapi
         connect
         response = communicate action, data
 
-        raise CommunicationFailedError if response.nil?
-        action = response[0][0..3].unpack('L>')[0]
-        raise CommunicationFailedError if RESPONSES[action][1] > response[0].length
-
-        begin
-          RESPONSES[action][0].from_udp(*args, response[0][8..-1])
-        rescue Torckapi::Response::ArgumentError => e
-          $stderr.puts "Error: #{e.inspect}"
-          $stderr.puts "Response: #{response.inspect}"
-          raise CommunicationFailedError
-        end
+        RESPONSE_CLASSES[response[0][0..3].unpack('L>')[0]].from_udp(*args, response[0][8..-1])
       end
 
-      def announce_request_data info_hash
-        [[info_hash].pack('H*'), SecureRandom.random_bytes(20), [0, 0, 0, 0, 0, 0, -1, 0].pack('Q>3L>4S>')].join
+      def announce_request_data info_hash, peer_id
+        [[info_hash].pack('H*'), peer_id, [0, 0, 0, 0, 0, 0, -1, 0].pack('Q>3L>4S>')].join
       end
 
       def scrape_request_data info_hashes
@@ -62,8 +46,7 @@ module Torckapi
         return if @connection_id && @communicated_at.to_i >= Time.now.to_i - CONNECTION_TIMEOUT
 
         @connection_id = [0x41727101980].pack('Q>')
-        response = communicate 0 # connect
-        raise ConnectionFailedError if response.nil? or 16 > response[0].length
+        response = communicate Connect
         @connection_id = response[0][8..15]
       end
 
@@ -81,12 +64,14 @@ module Torckapi
             @socket.send(packet, 0, @url.host, @url.port)
             response = @socket.recvfrom(65536)
             raise TransactionIdMismatchError if transaction_id != response[0][4..7]
+            raise MalformedResponseError if RESPONSE_MIN_LENGTHS[response[0][0..3].unpack('L>')[0]] > response[0].length
             @communicated_at = Time.now
           end
         rescue CommunicationTimeoutError
           retry if (tries += 1) <= @options[:tries]
-          raise CommunicationFailedError
         end
+
+        raise CommunicationFailedError if response.nil?
 
         response
       end
