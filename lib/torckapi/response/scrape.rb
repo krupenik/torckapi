@@ -12,10 +12,14 @@ module Torckapi
       # @return [Torckapi::Response::Scrape] response
       def self.from_udp info_hashes, data
         raise ArgumentError, "data does not match info_hashes" if data.length != info_hashes.count * 12
-        new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| Hash[[:seeders, :completed, :leechers].zip i.unpack('L>3').map(&:to_i)] })]
+        new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| peers_hash(i) })]
       end
 
       private
+
+      def self.peers_hash data
+        Hash[[:seeders, :completed, :leechers].zip(data.unpack('L>3').map(&:to_i))]
+      end
 
       def initialize data
         @data = data
