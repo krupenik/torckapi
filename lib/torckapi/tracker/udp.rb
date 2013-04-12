@@ -10,6 +10,15 @@ module Torckapi
     class UDP < Base
       CONNECTION_TIMEOUT = 60
 
+      # index = action (connect, announce, scrape, error)
+      # [response class, minimum response length]
+      RESPONSES = [
+        [nil, 16],
+        [Torckapi::Response::Announce, 20],
+        [Torckapi::Response::Scrape, 8],
+        [Torckapi::Response::Error, 8]
+      ].freeze
+
       # (see Base#announce)
       def announce info_hash
         super info_hash
@@ -29,19 +38,11 @@ module Torckapi
         response = communicate action, data
 
         raise CommunicationFailedError if response.nil?
+        action = response[0][0..3].unpack('L>')[0]
+        raise CommunicationFailedError if RESPONSES[action][1] > response[0].length
 
         begin
-          case response[0][0..3].unpack('L>')[0] # action
-          when 1
-            raise AnnounceFailedError if 20 > response[0].length
-            Torckapi::Response::Announce.from_udp(*args, response[0][8..-1])
-          when 2
-            raise ScrapeFailedError if 8 > response[0].length
-            Torckapi::Response::Scrape.from_udp(*args, response[0][8..-1])
-          when 3
-            raise CommunicationFailedError if 8 > response[0].length
-            Torckapi::Response::Error.from_udp(*args, response[0][8..-1])
-          end
+          RESPONSES[action][0].from_udp(*args, response[0][8..-1])
         rescue Torckapi::Response::ArgumentError => e
           $stderr.puts "Error: #{e.inspect}"
           $stderr.puts "Response: #{response.inspect}"
