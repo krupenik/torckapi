@@ -1,5 +1,9 @@
 # Torckapi — torrent tracker querying API
 
+[![Gem Version](https://badge.fury.io/rb/torckapi.png)](http://badge.fury.io/rb/torckapi)
+[![Code Climate](https://codeclimate.com/github/krupenik/torckapi.png)](https://codeclimate.com/github/krupenik/torckapi)
+[![Dependency Status](https://gemnasium.com/krupenik/torckapi.png)](https://gemnasium.com/krupenik/torckapi)
+
 ## Description
 
 Torckapi is a querying interface to torrent trackers.
