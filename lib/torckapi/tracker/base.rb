@@ -11,10 +11,10 @@ module Torckapi
       end
 
       # Scrape Request
-      # @param info_hashes [String, Array<String>] A single 40-char hexadecimal string or an array of those
+      # @param info_hashes [Array<String>] An array of 40-char hexadecimal strings
       # @return [Torckapi::Response::Scrape] a response object
       def scrape info_hashes=[]
-        raise Torckapi::InvalidInfohashError if [*info_hashes].any? { |i| i !~ /\A[0-9a-f]{40}\z/i }
+        raise Torckapi::InvalidInfohashError if info_hashes.any? { |i| i !~ /\A[0-9a-f]{40}\z/i }
       end
 
       private
