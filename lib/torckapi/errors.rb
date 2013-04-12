@@ -7,10 +7,8 @@ module Torckapi
     class InvalidSchemeError < Error; end
     class ConnectionFailedError < Error; end
     class CommunicationError < Error; end
-    class CommunicationTimeoutError < CommunicationError; end
     class CommunicationFailedError < CommunicationError; end
-    class AnnounceFailedError < CommunicationFailedError; end
-    class ScrapeFailedError < CommunicationFailedError; end
+    class CommunicationTimeoutError < CommunicationError; end
   end
 
   module Response

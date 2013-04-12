@@ -11,9 +11,7 @@ module Torckapi
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Scrape] response
       def self.from_udp info_hashes, data
-        raise ArgumentError, "info_hashes cannot be nil" if info_hashes.nil?
-        raise ArgumentError, "data cannot be nil" if data.nil?
-        raise ArgumentError, "data size invalid" if data.length != info_hashes.count * 12
+        raise ArgumentError, "data does not match info_hashes" if data.length != info_hashes.count * 12
         new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| Hash[[:seeders, :completed, :leechers].zip i.unpack('L>3').map(&:to_i)] })]
       end
 

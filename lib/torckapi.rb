@@ -1,11 +1,11 @@
 require 'uri'
 require 'torckapi/version'
 require 'torckapi/errors'
-require 'torckapi/tracker/http'
-require 'torckapi/tracker/udp'
 require 'torckapi/response/announce'
 require 'torckapi/response/error'
 require 'torckapi/response/scrape'
+require 'torckapi/tracker/http'
+require 'torckapi/tracker/udp'
 
 module Torckapi
   # Creates a tracker interface instance

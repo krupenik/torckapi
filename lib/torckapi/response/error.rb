@@ -14,8 +14,6 @@ module Torckapi
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Error] response
       def self.from_udp info_hashes, data
-        raise ArgumentError, "info_hashes cannot be nil" if info_hashes.nil?
-        raise ArgumentError, "data cannot be nil" if data.nil?
         new info_hashes, data
       end
 
