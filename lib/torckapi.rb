@@ -4,6 +4,7 @@ require 'torckapi/errors'
 require 'torckapi/tracker/http'
 require 'torckapi/tracker/udp'
 require 'torckapi/response/announce'
+require 'torckapi/response/error'
 require 'torckapi/response/scrape'
 
 module Torckapi
