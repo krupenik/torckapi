@@ -10,30 +10,41 @@ module Torckapi
     class UDP < Base
       CONNECTION_TIMEOUT = 60
 
-      # @see Base#announce
+      # (see Base#announce)
       def announce info_hash
         super info_hash
-
-        data = [[info_hash].pack('H*'), SecureRandom.random_bytes(20), [0, 0, 0, 0, 0, 0, -1, 0].pack('Q>3L>4S>')].join
-
-        connect
-        response_body = communicate(1, data)[0] # announce
-
-        Torckapi::Response::Announce.from_udp info_hash, response_body[12..-1]
+        perform_request 1, announce_request_data(info_hash), info_hash
       end
 
+      # (see Base#scrape)
       def scrape info_hashes=[]
         super info_hashes
-
-        data = [*info_hashes].map { |i| [i].pack('H*') }.join
-
-        connect
-        response_body = communicate(2, data)[0] # scrape
-
-        Torckapi::Response::Scrape.from_udp [*info_hashes], response_body[8..-1]
+        perform_request 2, scrape_request_data(info_hashes), info_hashes
       end
 
       private
+
+      def perform_request action, data, *args
+        connect
+        response = communicate action, data
+
+        case response[0][0..3].unpack('L>')[0] # action
+        when 1
+          Torckapi::Response::Announce.from_udp(*args, response[0][8..-1])
+        when 2
+          Torckapi::Response::Scrape.from_udp(*args, response[0][8..-1])
+        when 3
+          Torckapi::Response::Error.from_udp(*args, response[0][8..-1])
+        end
+      end
+
+      def announce_request_data info_hash
+        [[info_hash].pack('H*'), SecureRandom.random_bytes(20), [0, 0, 0, 0, 0, 0, -1, 0].pack('Q>3L>4S>')].join
+      end
+
+      def scrape_request_data info_hashes
+        info_hashes.map { |i| [i].pack('H*') }.join
+      end
 
       def connect
         return if @connection_id && @communicated_at.to_i >= Time.now.to_i - CONNECTION_TIMEOUT
@@ -56,7 +67,6 @@ module Torckapi
             @socket.send(packet, 0, @url.host, @url.port)
             response = @socket.recvfrom(65536)
             raise TransactionIdMismatchError if transaction_id != response[0][4..7]
-            raise Torckapi::Tracker::Error.new(response[8..-1]) if 3 == response[0][0..3].unpack('L>')[0] # tracker sent error
             @communicated_at = Time.now
           end
         rescue CommunicationTimeoutError
