@@ -10,7 +10,7 @@ module Torckapi
       attr_reader :info_hash, :info_hashes, :message
 
       # Construct response object from udp response data
-      # @param info_hash [String] 40-char hexadecimal string
+      # @param info_hashes [String, Array<String>] a 40-char hexadecimal string or an array of those
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Error] response
       def self.from_udp info_hashes, data
