@@ -36,6 +36,4 @@ tracker.scrape(["0123456789ABCDEF0123456789ABCDEF01234567", "123456789ABCDEF0123
 
 Add tests.
 
-Add HTTP implementation.
-
 Document everything.

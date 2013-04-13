@@ -1,9 +1,10 @@
 require 'ipaddr'
-require 'bencode'
+require 'torckapi/response/base'
 
 module Torckapi
   module Response
-    class Announce
+    # Announce response
+    class Announce < Base
       # @!attribute [r] info_hash
       #   @return [String] 40-char hexadecimal string
       # @!attribute [r] leechers
@@ -27,10 +28,9 @@ module Torckapi
       # @param data [String] HTTP response data (bencoded)
       # @param compact [true, false] is peer data in compact format?
       # @return [Torckapi::Response::Announce] response
-      def self.from_http info_hash, data, compact=true
-        bdecoded_data = BEncode.load(data)
-        raise Torckapi::Tracker::MalformedResponseError unless bdecoded_data.is_a? Hash and bdecoded_data.has_key? 'peers'
-        new info_hash, *bdecoded_data.values_at("incomplete", "complete"), peers_from_compact(bdecoded_data['peers'])
+      def self.from_http info_hash, data
+        bdecoded_data = bdecode_and_check data, 'peers'
+        new info_hash, *bdecoded_data.values_at('incomplete', 'complete'), peers_from_compact(bdecoded_data['peers'])
       end
 
       private

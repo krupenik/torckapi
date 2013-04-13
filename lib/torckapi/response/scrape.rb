@@ -1,10 +1,9 @@
-require 'bencode'
+require 'torckapi/response/base'
 
 module Torckapi
   module Response
-
     # Scrape response
-    class Scrape
+    class Scrape < Base
       # @return [Hash<String, Hash>] scrape data
       attr_reader :data
 
@@ -13,14 +12,13 @@ module Torckapi
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Scrape] response
       def self.from_udp info_hashes, data
-        raise Torckapi::MalformedResponseError if data.length != info_hashes.count * 12
+        raise Torckapi::Tracker::MalformedResponseError if data.length != info_hashes.count * 12
         new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| counts_unpacked(i) })]
       end
 
       def self.from_http data
-        bdecoded_data = BEncode.load(data)
-        raise Torckapi::MalformedResponseError unless bdecoded_data.is_a? Hash and bdecoded_data.has_key? 'files'
-        new Hash[bdecoded_data["files"].map { |info_hash, counts| [info_hash.unpack('H*').join, counts_translated(counts) ]}]
+        bdecoded_data = bdecode_and_check data, 'files'
+        new Hash[bdecoded_data['files'].map { |info_hash, counts| [info_hash.unpack('H*').join, counts_translated(counts) ]}]
       end
 
       private

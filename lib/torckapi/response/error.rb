@@ -1,6 +1,9 @@
+require 'torckapi/response/base'
+
 module Torckapi
   module Response
-    class Error
+    # Error response
+    class Error < Base
       # @!attribute [r] info_hash
       #   @return [String] 40-char hexadecimal string
       # @!attribute [r] info_hashes
