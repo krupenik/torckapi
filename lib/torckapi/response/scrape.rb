@@ -1,3 +1,5 @@
+require 'bencode'
+
 module Torckapi
   module Response
 
@@ -12,13 +14,27 @@ module Torckapi
       # @return [Torckapi::Response::Scrape] response
       def self.from_udp info_hashes, data
         raise Torckapi::ArgumentError, "data does not match info_hashes" if data.length != info_hashes.count * 12
-        new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| peers_hash(i) })]
+        new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| counts_unpacked(i) })]
+      end
+
+      def self.from_http data
+        bdecoded_data = BEncode.load(data)
+        raise Torckapi::ArgumentError, "invalid data" unless bdecoded_data.is_a? Hash and bdecoded_data.has_key? 'files'
+        new Hash[bdecoded_data["files"].map { |info_hash, counts| [info_hash.unpack('H*').join, counts_translated(counts) ]}]
       end
 
       private
 
-      def self.peers_hash data
-        Hash[[:seeders, :completed, :leechers].zip(data.unpack('L>3').map(&:to_i))]
+      def self.counts_unpacked data
+        counts_with_block(data, lambda { |data| data.unpack('L>3').map(&:to_i) })
+      end
+
+      def self.counts_translated data
+        counts_with_block(data, lambda { |data| data.values_at("complete", "downloaded", "incomplete") })
+      end
+
+      def self.counts_with_block data, block
+        Hash[[:seeders, :completed, :leechers].zip(block.call(data))]
       end
 
       def initialize data
