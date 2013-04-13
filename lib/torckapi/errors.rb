@@ -1,7 +1,6 @@
 module Torckapi
   class Error < StandardError; end
   class InvalidInfohashError < Error; end
-  class ArgumentError < Error; end
 
   module Tracker
     class Error < Torckapi::Error; end

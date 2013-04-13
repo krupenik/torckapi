@@ -29,7 +29,8 @@ module Torckapi
       # @return [Torckapi::Response::Announce] response
       def self.from_http info_hash, data, compact=true
         bdecoded_data = BEncode.load(data)
-        new info_hash, *bdecoded_data.values_at("incomplete", "complete"), peers_from_compact(bdecoded_data["peers"])
+        raise Torckapi::MalformedResponseError unless bdecoded_data.is_a? Hash and bdecoded_data.has_key? 'peers'
+        new info_hash, *bdecoded_data.values_at("incomplete", "complete"), peers_from_compact(bdecoded_data['peers'])
       end
 
       private
