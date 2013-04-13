@@ -1,6 +1,7 @@
 module Torckapi
   class Error < StandardError; end
   class InvalidInfohashError < Error; end
+  class ArgumentError < Error; end
 
   module Tracker
     class Error < Torckapi::Error; end
@@ -11,10 +12,5 @@ module Torckapi
     class CommunicationTimeoutError < CommunicationError; end
     class MalformedResponseError < CommunicationError; end
     class TransactionIdMismatchError < CommunicationError; end
-  end
-
-  module Response
-    class Error < Torckapi::Error; end
-    class ArgumentError < Error; end
   end
 end

@@ -11,7 +11,7 @@ module Torckapi
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Scrape] response
       def self.from_udp info_hashes, data
-        raise ArgumentError, "data does not match info_hashes" if data.length != info_hashes.count * 12
+        raise Torckapi::ArgumentError, "data does not match info_hashes" if data.length != info_hashes.count * 12
         new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| peers_hash(i) })]
       end
 
