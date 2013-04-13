@@ -5,27 +5,24 @@ require 'torckapi/tracker/base'
 
 module Torckapi
   module Tracker
-
     # Implementation of http://www.bittorrent.org/beps/bep_0015.html
     class UDP < Base
-      CONNECTION_TIMEOUT = 60
-      REQUEST_ACTIONS = [Connect = 0, Announce = 1, Scrape = 2].freeze
-      RESPONSE_CLASSES = [nil, Torckapi::Response::Announce, Torckapi::Response::Scrape, Torckapi::Response::Error].freeze
-      RESPONSE_MIN_LENGTHS = [16, 20, 8, 8].freeze
-
-      # (see Base#announce)
       def announce info_hash, peer_id=SecureRandom.random_bytes(20)
         super info_hash
         perform_request Announce, announce_request_data(info_hash, peer_id), info_hash
       end
 
-      # (see Base#scrape)
       def scrape info_hashes=[]
         super info_hashes
         perform_request Scrape, scrape_request_data(info_hashes), info_hashes
       end
 
       private
+
+      CONNECTION_TIMEOUT = 60
+      REQUEST_ACTIONS = [Connect = 0, Announce = 1, Scrape = 2].freeze
+      RESPONSE_CLASSES = [nil, Torckapi::Response::Announce, Torckapi::Response::Scrape, Torckapi::Response::Error].freeze
+      RESPONSE_MIN_LENGTHS = [16, 20, 8, 8].freeze
 
       def perform_request action, data, *args
         connect

@@ -13,6 +13,7 @@ module Torckapi
       #   @return [Array<IPAddr, Fixnum>] list of peers
       # @!attribute [r] seeders
       #   @return [Fixnum] number of seeders
+
       attr_reader :info_hash, :leechers, :peers, :seeders
 
       # Construct response object from udp response data
@@ -26,8 +27,8 @@ module Torckapi
       # Construct response object from http response data
       # @param info_hash [String] 40-char hexadecimal string
       # @param data [String] HTTP response data (bencoded)
-      # @param compact [true, false] is peer data in compact format?
       # @return [Torckapi::Response::Announce] response
+      # @raise [Torckapi::Tracker::MalformedResponseError]
       def self.from_http info_hash, data
         bdecoded_data = bdecode_and_check data, 'peers'
         new info_hash, *bdecoded_data.values_at('incomplete', 'complete'), peers_from_compact(bdecoded_data['peers'])

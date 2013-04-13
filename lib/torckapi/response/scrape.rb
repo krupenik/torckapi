@@ -11,11 +11,16 @@ module Torckapi
       # @param info_hashes [Array<String>] list of 40-char hexadecimal strings
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Scrape] response
+      # @raise [Torckapi::Tracker::MalformedResponseError]
       def self.from_udp info_hashes, data
         raise Torckapi::Tracker::MalformedResponseError if data.length != info_hashes.count * 12
         new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| counts_unpacked(i) })]
       end
 
+      # Construct response object from http response data
+      # @param data [String] HTTP response data (bencoded)
+      # @return [Torckapi::Response::Scrape] response
+      # @raise [Torckapi::Tracker::MalformedResponseError]
       def self.from_http data
         bdecoded_data = bdecode_and_check data, 'files'
         new Hash[bdecoded_data['files'].map { |info_hash, counts| [info_hash.unpack('H*').join, counts_translated(counts) ]}]

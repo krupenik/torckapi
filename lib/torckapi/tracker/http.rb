@@ -5,8 +5,6 @@ module Torckapi
   module Tracker
 
     class HTTP < Base
-      REQUEST_ACTIONS = [Announce = 1, Scrape = 2].freeze
-
       # (see Base#announce)
       def announce info_hash
         super info_hash
@@ -20,6 +18,8 @@ module Torckapi
       end
 
       private
+
+      REQUEST_ACTIONS = [Announce = 1, Scrape = 2].freeze
 
       def initialize url, options={}
         super url, options
