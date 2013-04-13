@@ -24,15 +24,15 @@ module Torckapi
       private
 
       def self.counts_unpacked data
-        counts_with_block(data, lambda { |data| data.unpack('L>3').map(&:to_i) })
+        counts_with_block(data) { |data| data.unpack('L>3').map(&:to_i) }
       end
 
       def self.counts_translated data
-        counts_with_block(data, lambda { |data| data.values_at("complete", "downloaded", "incomplete") })
+        counts_with_block(data) { |data| data.values_at('complete', 'downloaded', 'incomplete') }
       end
 
-      def self.counts_with_block data, block
-        Hash[[:seeders, :completed, :leechers].zip(block.call(data))]
+      def self.counts_with_block data, &block
+        Hash[[:seeders, :completed, :leechers].zip(yield data)]
       end
 
       def initialize data
