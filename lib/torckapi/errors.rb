@@ -1,15 +1,15 @@
 module Torckapi
-  class Error < StandardError; end
-  class InvalidInfohashError < Error; end
+  Error = Class.new(StandardError)
+  InvalidInfohashError = Class.new(Error)
 
   module Tracker
-    class Error < Torckapi::Error; end
-    class InvalidSchemeError < Error; end
-    class ConnectionFailedError < Error; end
-    class CommunicationError < Error; end
-    class CommunicationFailedError < CommunicationError; end
-    class CommunicationTimeoutError < CommunicationError; end
-    class MalformedResponseError < Error; end
-    class TransactionIdMismatchError < CommunicationError; end
+    Error = Class.new(Torckapi::Error)
+    InvalidSchemeError = Class.new(Error)
+    ConnectionFailedError Class.new(Error)
+    CommunicationError = Class.new(Error)
+    CommunicationFailedError = Class.new(CommunicationError)
+    CommunicationTimeoutError = Class.new(CommunicationError)
+    MalformedResponseError = Class.new(Error)
+    TransactionIdMismatchError = Class.new(CommunicationError)
   end
 end
