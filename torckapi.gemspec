@@ -15,8 +15,10 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Torckapi::VERSION
 
-  gem.add_development_dependency 'rake'
-  gem.add_development_dependency 'minitest'
+  gem.licenses      = ["MIT"]
 
-  gem.add_runtime_dependency 'bencode'
+  gem.add_development_dependency 'rake', '~> 0'
+  gem.add_development_dependency 'minitest', '~> 0'
+
+  gem.add_runtime_dependency 'bencode', '~> 0'
 end
