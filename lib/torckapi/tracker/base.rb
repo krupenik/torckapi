@@ -3,6 +3,8 @@ module Torckapi
 
     # Public interface for torrent trackers
     class Base
+      attr_reader :url
+
       # Announce request
       # @param info_hash [String] 40-char hexadecimal string
       # @param peer_id [String] 20-byte binary string
