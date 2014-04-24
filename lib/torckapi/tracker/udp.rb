@@ -42,42 +42,42 @@ module Torckapi
       def connect
         return if @connection_id && @communicated_at.to_i >= Time.now.to_i - CONNECTION_TIMEOUT
 
-        @connection_id = [0x41727101980].pack('Q>')
+        @connection_id = [0x041727101980].pack('Q>')
         response = communicate Connect
-        @connection_id = response[:data][8..15]
+        @connection_id = response[:data]
       end
 
       def communicate action, data=nil
         @socket ||= UDPSocket.new
 
         transaction_id = SecureRandom.random_bytes(4)
-        packet = [@connection_id, [action].pack('L>'), transaction_id, data].join
-
         tries = 0
         response = nil
 
         begin
+          packet = [@connection_id, [action].pack('L>'), transaction_id, data].join
+
           Timeout::timeout(@options[:timeout], CommunicationTimeoutError) do
             @socket.send(packet, 0, @url.host, @url.port)
             response = parse_response @socket.recvfrom(65536), transaction_id
             @communicated_at = Time.now
           end
-        rescue CommunicationTimeoutError, LittleEndianResponseError
+        rescue CommunicationTimeoutError
           retry if (tries += 1) <= @options[:tries]
         end
 
-        response || raise CommunicationFailedError
+        raise CommunicationFailedError unless response
+
+        response
       end
 
       def parse_response data, transaction_id
         response, sender_addrinfo = data
 
         response_type = response[0..3].unpack('L>')[0]
-        response_type_le = response[0..3].unpack('L<')[0]
 
-        raise((0...RESPONSE_CLASSES.length).include?(response_type_le) ? LittleEndianResponseError : MalformedResponseError, [response]) unless (0...RESPONSE_CLASSES.length).include?(response_type)
-        raise TransactionIdMismatchError, [response] if transaction_id != response[4..7]
-        raise(MalformedResponseError, [response]) if RESPONSE_MIN_LENGTHS[response_type] > response.length
+        raise TransactionIdMismatchError, response.inspect if transaction_id != response[4..7]
+        raise MalformedResponseError, response.inspect if RESPONSE_MIN_LENGTHS[response_type] > response.length
 
         {type: response_type, data: response[8..-1]}
       end
