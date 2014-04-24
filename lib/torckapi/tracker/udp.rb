@@ -63,7 +63,7 @@ module Torckapi
             raise TransactionIdMismatchError if transaction_id != response[0][4..7]
 
             response_type = response[0][0..3].unpack('L>')[0]
-            raise MalformedResponseError if !(0...RESPONSE_CLASSES.length).include?(response_type) ||
+            raise(MalformedResponseError, response) if !(0...RESPONSE_CLASSES.length).include?(response_type) ||
               RESPONSE_MIN_LENGTHS[response_type] > response[0].length
             @communicated_at = Time.now
           end
