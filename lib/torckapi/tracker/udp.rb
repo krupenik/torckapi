@@ -28,7 +28,7 @@ module Torckapi
         connect
         response = communicate action, data
 
-        RESPONSE_CLASSES[response[0][0..3].unpack('L>')[0]].from_udp(*args, response[0][8..-1])
+        RESPONSE_CLASSES[response[:type]].from_udp(*args, response[:data])
       end
 
       def announce_request_data info_hash, peer_id
@@ -44,7 +44,7 @@ module Torckapi
 
         @connection_id = [0x41727101980].pack('Q>')
         response = communicate Connect
-        @connection_id = response[0][8..15]
+        @connection_id = response[:data][8..15]
       end
 
       def communicate action, data=nil
@@ -59,21 +59,27 @@ module Torckapi
         begin
           Timeout::timeout(@options[:timeout], CommunicationTimeoutError) do
             @socket.send(packet, 0, @url.host, @url.port)
-            response = @socket.recvfrom(65536)
-            raise TransactionIdMismatchError if transaction_id != response[0][4..7]
-
-            response_type = response[0][0..3].unpack('L>')[0]
-            raise(MalformedResponseError, response) if !(0...RESPONSE_CLASSES.length).include?(response_type) ||
-              RESPONSE_MIN_LENGTHS[response_type] > response[0].length
+            response = parse_response @socket.recvfrom(65536), transaction_id
             @communicated_at = Time.now
           end
-        rescue CommunicationTimeoutError
+        rescue CommunicationTimeoutError, LittleEndianResponseError
           retry if (tries += 1) <= @options[:tries]
         end
 
-        raise CommunicationFailedError if response.nil?
+        response || raise CommunicationFailedError
+      end
 
-        response
+      def parse_response data, transaction_id
+        response, sender_addrinfo = data
+
+        response_type = response[0..3].unpack('L>')[0]
+        response_type_le = response[0..3].unpack('L<')[0]
+
+        raise((0...RESPONSE_CLASSES.length).include?(response_type_le) ? LittleEndianResponseError : MalformedResponseError, [response]) unless (0...RESPONSE_CLASSES.length).include?(response_type)
+        raise TransactionIdMismatchError, [response] if transaction_id != response[4..7]
+        raise(MalformedResponseError, [response]) if RESPONSE_MIN_LENGTHS[response_type] > response.length
+
+        {type: response_type, data: response[8..-1]}
       end
     end
   end
