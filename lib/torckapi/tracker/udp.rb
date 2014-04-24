@@ -61,7 +61,10 @@ module Torckapi
             @socket.send(packet, 0, @url.host, @url.port)
             response = @socket.recvfrom(65536)
             raise TransactionIdMismatchError if transaction_id != response[0][4..7]
-            raise MalformedResponseError if RESPONSE_MIN_LENGTHS[response[0][0..3].unpack('L>')[0]] > response[0].length
+
+            response_type = response[0][0..3].unpack('L>')[0]
+            raise MalformedResponseError if !(0...RESPONSE_CLASSES.length).include?(response_type) ||
+              RESPONSE_MIN_LENGTHS[response_type] > response[0].length
             @communicated_at = Time.now
           end
         rescue CommunicationTimeoutError
