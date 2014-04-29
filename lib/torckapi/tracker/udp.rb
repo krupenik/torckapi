@@ -8,12 +8,12 @@ module Torckapi
     # Implementation of http://www.bittorrent.org/beps/bep_0015.html
     class UDP < Base
       def announce info_hash, peer_id=SecureRandom.random_bytes(20)
-        super info_hash
+        super
         perform_request Announce, announce_request_data(info_hash, peer_id), info_hash
       end
 
       def scrape info_hashes=[]
-        super info_hashes
+        super
         perform_request Scrape, scrape_request_data(info_hashes), info_hashes
       end
 

@@ -7,13 +7,13 @@ module Torckapi
     class HTTP < Base
       # (see Base#announce)
       def announce info_hash
-        super info_hash
+        super
         Torckapi::Response::Announce.from_http(info_hash, perform_request(url_for(@url.dup, Announce, info_hash)))
       end
 
       # (see Base#scrape)
       def scrape info_hashes=[]
-        super info_hashes
+        super
         Torckapi::Response::Scrape.from_http(perform_request(url_for(@url.dup, Scrape, info_hashes)))
       end
 
@@ -22,7 +22,7 @@ module Torckapi
       REQUEST_ACTIONS = [Announce = 1, Scrape = 2].freeze
 
       def initialize url, options={}
-        super url, options
+        super
         @url.query ||= ""
       end
 
