@@ -23,9 +23,22 @@ module Torckapi
       REQUEST_ACTIONS = [Connect = 0, Announce = 1, Scrape = 2].freeze
       RESPONSE_CLASSES = [nil, Torckapi::Response::Announce, Torckapi::Response::Scrape, Torckapi::Response::Error].freeze
       RESPONSE_MIN_LENGTHS = [16, 20, 8, 8].freeze
+      def initialize url, options={}
+        super
+        @state = nil
+        @connection_id = nil
+        @communicated_at = 0
+      end
+
+      def connected?
+        @connection_id && @communicated_at.to_i >= Time.now.to_i - CONNECTION_TIMEOUT
+      end
+
+      def connecting?
+        @state == :connecting
+      end
 
       def perform_request action, data, *args
-        connect
         response = communicate action, data
 
         RESPONSE_CLASSES[response[:type]].from_udp(*args, response[:data])
@@ -40,24 +53,26 @@ module Torckapi
       end
 
       def connect
-        return if @connection_id && @communicated_at.to_i >= Time.now.to_i - CONNECTION_TIMEOUT
+        return if connected? || connecting?
 
-        @connection_id = [0x041727101980].pack('Q>')
+        @state, @connection_id = :connecting, [0x041727101980].pack('Q>')
         response = communicate Connect
-        @connection_id = response[:data]
+        @state, @connection_id = nil, response[:data]
       end
 
       def communicate action, data=nil
         @socket ||= UDPSocket.new
 
-        transaction_id = SecureRandom.random_bytes(4)
         tries = 0
         response = nil
 
         begin
+          timeout = @options[:timeout] * (2 ** tries)
+          connect
+          transaction_id = SecureRandom.random_bytes(4)
           packet = [@connection_id, [action].pack('L>'), transaction_id, data].join
 
-          Timeout::timeout(@options[:timeout], CommunicationTimeoutError) do
+          Timeout::timeout(timeout, CommunicationTimeoutError) do
             @socket.send(packet, 0, @url.host, @url.port)
             response = parse_response @socket.recvfrom(65536), transaction_id
             @communicated_at = Time.now

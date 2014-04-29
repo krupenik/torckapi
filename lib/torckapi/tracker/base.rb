@@ -30,7 +30,7 @@ module Torckapi
 
       def initialize url, options={}
         @url = url
-        @options = {timeout: 15, tries: 3}.merge(options)
+        @options = {timeout: 15, tries: 7}.merge(options)
       end
     end
   end
