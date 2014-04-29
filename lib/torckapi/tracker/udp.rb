@@ -60,7 +60,6 @@ module Torckapi
         @state, @connection_id = :connecting, [0x041727101980].pack('Q>')
         response = communicate Connect
         @state, @connection_id = nil, response[:data]
-        @logger.debug("connection_id: #{@connection_id.inspect}")
       end
 
       def communicate action, data=nil
@@ -76,13 +75,11 @@ module Torckapi
           packet = [@connection_id, [action].pack('L>'), transaction_id, data].join
 
           Timeout::timeout(timeout, CommunicationTimeoutError) do
-            @logger.debug("<<< #{packet.inspect}")
             @socket.send(packet, 0, @url.host, @url.port)
             response = parse_response @socket.recvfrom(65536), transaction_id
             @communicated_at = Time.now
           end
         rescue CommunicationTimeoutError, LittleEndianResponseError => e
-          @logger.error("#{e}, retrying")
           retry if (tries += 1) <= @options[:tries]
         end
 
@@ -93,7 +90,6 @@ module Torckapi
 
       def parse_response data, transaction_id
         response = data[0]
-        @logger.debug(">>> #{response.inspect}")
 
         raise TransactionIdMismatchError, response.inspect if transaction_id != response[4..7]
 

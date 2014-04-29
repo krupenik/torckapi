@@ -1,5 +1,3 @@
-require 'logger'
-
 module Torckapi
   module Tracker
 
@@ -33,7 +31,6 @@ module Torckapi
       def initialize url, options={}
         @url = url
         @options = {timeout: 15, tries: 7}.merge(options)
-        @logger = Logger.new STDERR
       end
     end
   end
