@@ -10,6 +10,7 @@ module Torckapi
     CommunicationFailedError = Class.new(CommunicationError)
     CommunicationTimeoutError = Class.new(CommunicationError)
     MalformedResponseError = Class.new(Error)
+    LittleEndianResponseError = Class.new(MalformedResponseError)
     TransactionIdMismatchError = Class.new(CommunicationError)
   end
 end

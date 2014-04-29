@@ -23,6 +23,8 @@ module Torckapi
       REQUEST_ACTIONS = [Connect = 0, Announce = 1, Scrape = 2].freeze
       RESPONSE_CLASSES = [nil, Torckapi::Response::Announce, Torckapi::Response::Scrape, Torckapi::Response::Error].freeze
       RESPONSE_MIN_LENGTHS = [16, 20, 8, 8].freeze
+      RESPONSE_CODES = 0..RESPONSE_CLASSES.length
+
       def initialize url, options={}
         super
         @state = nil
@@ -41,7 +43,7 @@ module Torckapi
       def perform_request action, data, *args
         response = communicate action, data
 
-        RESPONSE_CLASSES[response[:type]].from_udp(*args, response[:data])
+        RESPONSE_CLASSES[response[:code]].from_udp(*args, response[:data])
       end
 
       def announce_request_data info_hash, peer_id
@@ -79,7 +81,8 @@ module Torckapi
             response = parse_response @socket.recvfrom(65536), transaction_id
             @communicated_at = Time.now
           end
-        rescue CommunicationTimeoutError
+        rescue CommunicationTimeoutError, LittleEndianResponseError => e
+          @logger.error("#{e}, retrying")
           retry if (tries += 1) <= @options[:tries]
         end
 
@@ -89,14 +92,19 @@ module Torckapi
       end
 
       def parse_response data, transaction_id
-        response, sender_addrinfo = data
-
-        response_type = response[0..3].unpack('L>')[0]
+        response = data[0]
+        @logger.debug(">>> #{response.inspect}")
 
         raise TransactionIdMismatchError, response.inspect if transaction_id != response[4..7]
-        raise MalformedResponseError, response.inspect if RESPONSE_MIN_LENGTHS[response_type] > response.length
 
-        {type: response_type, data: response[8..-1]}
+        response_code, response_code_le = response[0..3].unpack('L>')[0], response[0..3].unpack('L<')[0]
+
+        unless RESPONSE_CODES.include?(response_code)
+          raise (RESPONSE_CODES.include?(response_code_le) ? LittleEndianResponseError : MalformedResponseError), response.inspect
+        end
+        raise MalformedResponseError, response.inspect if RESPONSE_MIN_LENGTHS[response_code] > response.length
+
+        {code: response_code, data: response[8..-1]}
       end
     end
   end
