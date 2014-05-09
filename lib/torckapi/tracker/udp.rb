@@ -76,7 +76,7 @@ module Torckapi
 
           Timeout::timeout(timeout, CommunicationTimeoutError) do
             @socket.send(packet, 0, @url.host, @url.port)
-            response = parse_response @socket.recvfrom(65536), transaction_id
+            response = process_response @socket.recvfrom(65536)[0], transaction_id
             @communicated_at = Time.now
           end
         rescue CommunicationTimeoutError, LittleEndianResponseError => e
@@ -88,19 +88,30 @@ module Torckapi
         response
       end
 
-      def parse_response data, transaction_id
-        response = data[0]
-
-        raise TransactionIdMismatchError, response.inspect if transaction_id != response[4..7]
-
-        response_code, response_code_le = response[0..3].unpack('L>')[0], response[0..3].unpack('L<')[0]
-
-        unless RESPONSE_CODES.include?(response_code)
-          raise (RESPONSE_CODES.include?(response_code_le) ? LittleEndianResponseError : MalformedResponseError), response.inspect
-        end
-        raise MalformedResponseError, response.inspect if RESPONSE_MIN_LENGTHS[response_code] > response.length
+      def process_response response, transaction_id
+        check_transaction_id response, transaction_id
+        response_code = extract_response_code response
+        check_response_length response, response_code
 
         {code: response_code, data: response[8..-1]}
+      end
+
+      def check_transaction_id response, transaction_id
+        raise TransactionIdMismatchError, response if transaction_id != response[4..7]
+      end
+
+      def extract_response_code response
+        response_code, response_code_le = [response[0..3]].flat_map { |x| [x.unpack('L>')[0], x.unpack('L<')[0]] }
+
+        unless RESPONSE_CODES.include?(response_code)
+          raise (RESPONSE_CODES.include?(response_code_le) ? LittleEndianResponseError : MalformedResponseError), response
+        end
+
+        response_code
+      end
+
+      def check_response_length response, response_code
+        raise MalformedResponseError, response if RESPONSE_MIN_LENGTHS[response_code] > response.length
       end
     end
   end
