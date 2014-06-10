@@ -1,8 +1,8 @@
 # Torckapi — torrent tracker querying API
 
-[![Gem Version](https://badge.fury.io/rb/torckapi.svg)](https://rubygems.org/gems/torckapi)
-[![Dependency Status](https://gemnasium.com/krupenik/torckapi.svg)](https://gemnasium.com/krupenik/torckapi)
-[![Code Climate](https://codeclimate.com/github/krupenik/torckapi.png)](https://codeclimate.com/github/krupenik/torckapi)
+[![Gem Version](https://img.shields.io/gem/v/torckapi.svg)](https://rubygems.org/gems/torckapi)
+[![Dependencies Status](https://img.shields.io/gemnasium/krupenik/torckapi.svg)](https://gemnasium.com/krupenik/torckapi)
+[![Code Climate](https://img.shields.io/codeclimate/github/krupenik/torckapi.svg)](https://codeclimate.com/github/krupenik/torckapi)
 
 ## Description
 
