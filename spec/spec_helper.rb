@@ -1,6 +1,7 @@
 require 'torckapi'
 
 require "codeclimate-test-reporter"
+ENV['CODECLIMATE_REPO_TOKEN'] = "3004a7854020df72de40cef4c1f7fc1992ca1969b5420f548df7f4ab6a9b881b"
 CodeClimate::TestReporter.start
 
 RSpec.configure do |config|
