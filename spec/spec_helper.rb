@@ -1,5 +1,8 @@
 require 'torckapi'
 
+require "codeclimate-test-reporter"
+CodeClimate::TestReporter.start
+
 RSpec.configure do |config|
   def fixture(filename)
     File.dirname(__FILE__) + '/fixtures/' + filename
