@@ -17,10 +17,11 @@ Gem::Specification.new do |gem|
 
   gem.licenses      = ["MIT"]
 
+  gem.add_dependency 'bencode', '~> 0'
+
   gem.add_development_dependency 'rake', '~> 0'
   gem.add_development_dependency 'minitest', '~> 0'
-  gem.add_development_dependency "rspec", "~> 3.2"
-  gem.add_development_dependency('rake')
+  gem.add_development_dependency 'rspec', '~> 3.2'
+  gem.add_development_dependency 'rake'
 
-  gem.add_runtime_dependency 'bencode', '~> 0'
 end
