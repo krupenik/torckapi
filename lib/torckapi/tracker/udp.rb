@@ -69,23 +69,23 @@ module Torckapi
         response = nil
 
         begin
-          timeout = @options[:timeout] * (2 ** tries)
           connect
           transaction_id = SecureRandom.random_bytes(4)
           packet = [@connection_id, [action].pack('L>'), transaction_id, data].join
 
-          Timeout::timeout(timeout, CommunicationTimeoutError) do
+          Timeout::timeout(@options[:timeout], CommunicationTimeoutError) do
             @socket.send(packet, 0, @url.host, @url.port)
             response = process_response @socket.recvfrom(65536)[0], transaction_id
             @communicated_at = Time.now
           end
+          response
         rescue CommunicationTimeoutError, LittleEndianResponseError => e
-          retry if (tries += 1) <= @options[:tries]
+          if (tries += 1) <= @options[:tries]
+            retry
+          else
+            raise CommunicationFailedError
+          end
         end
-
-        raise CommunicationFailedError unless response
-
-        response
       end
 
       def process_response response, transaction_id
