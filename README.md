@@ -26,14 +26,17 @@ tracker.announce("0123456789ABCDEF0123456789ABCDEF01234567")
 #      @seeders=1,
 #      @peers=[["127.0.0.1", 54078], ["127.0.0.2", 43666]]>
 
-tracker.scrape(["0123456789ABCDEF0123456789ABCDEF01234567", "123456789ABCDEF0123456789ABCDEF012345678"])
+tracker.scrape(["0123456789ABCDEF0123456789ABCDEF01234567",
+                "123456789ABCDEF0123456789ABCDEF012345678"])
 # => #<Torckapi::Response::Scrape:0x007fa1bc0fe320
-#      @data={"0123456789ABCDEF0123456789ABCDEF01234567"=>{:seeders=>3, :completed=>0, :leechers=>13},
-#             "123456789ABCDEF0123456789ABCDEF012345678"=>{:seeders=>4, :completed=>10, :leechers=>8}}>
+#      @data={"0123456789ABCDEF0123456789ABCDEF01234567"=>{:seeders=>3,
+#                                                          :completed=>0,
+#                                                          :leechers=>13},
+#             "123456789ABCDEF0123456789ABCDEF012345678"=>{:seeders=>4,
+#                                                          :completed=>10,
+#                                                          :leechers=>8}}>
 ```
 
 ## TODO
-
-Add tests.
-
-Document everything.
+* Add tests.
+* Document everything.
