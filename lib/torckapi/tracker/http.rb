@@ -33,10 +33,21 @@ module Torckapi
       end
 
       def perform_request url
+
+        tries = 0
+
         begin
-          Net::HTTP.get(url)
-        rescue Errno::ECONNRESET, Errno::ETIMEDOUT, Timeout::Error
-          raise CommunicationFailedError
+          timeout = @options[:timeout]
+          request = Net::HTTP::Get.new(url)
+          Net::HTTP.start(url.host, url.port, open_timeout: timeout, read_timeout: timeout) do |http|
+            http.request(request).body
+          end
+        rescue Errno::ECONNRESET, Errno::ETIMEDOUT, Timeout::Error, Errno::ECONNREFUSED
+          if (tries += 1) <= @options[:tries]
+            retry # backs up to just after the "begin"
+          else
+            raise CommunicationFailedError
+          end
         end
       end
 
