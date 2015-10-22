@@ -8,12 +8,12 @@ RSpec.configure do |config|
     File.dirname(__FILE__) + '/fixtures/' + filename
   end
 
-  def make_response(xml_filename_or_string)
-    if xml_filename_or_string !~ /</
-      xml_filename_or_string = open(fixture(xml_filename_or_string + '.xml')).read
+  def make_response(filename_or_string)
+    if filename_or_string !~ /</
+      filename_or_string = open(fixture(filename_or_string + '.xml')).read
     end
 
-    Lastfm::Response.new(xml_filename_or_string)
+    Response.new(filename_or_string)
   end
 
   def init_torckapi
