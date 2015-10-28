@@ -9,11 +9,7 @@ RSpec.configure do |config|
   end
 
   def make_response(filename_or_string)
-    if filename_or_string !~ /</
-      filename_or_string = open(fixture(filename_or_string + '.xml')).read
-    end
-
-    Response.new(filename_or_string)
+    open(fixture(filename_or_string + '.txt'), "r:UTF-8").read
   end
 
   def init_torckapi
