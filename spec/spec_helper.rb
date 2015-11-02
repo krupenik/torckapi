@@ -13,7 +13,7 @@ RSpec.configure do |config|
   end
 
   def init_torckapi
-    @http_tracker = Torckapi.tracker("http://xxx.com/")
-    @udp_tracker = Torckapi.tracker("udp://xxx.com/")
+    @http_tracker = Torckapi.tracker("http://localhost/")
+    @udp_tracker = Torckapi.tracker("udp://localhost/")
   end
 end
