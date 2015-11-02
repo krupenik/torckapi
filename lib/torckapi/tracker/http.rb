@@ -38,7 +38,7 @@ module Torckapi
 
         begin
           timeout = @options[:timeout]
-          request = Net::HTTP::Get.new(url)
+          request = Net::HTTP::Get.new(url.to_s)
           Net::HTTP.start(url.host, url.port, open_timeout: timeout, read_timeout: timeout) do |http|
             http.request(request).body
           end
