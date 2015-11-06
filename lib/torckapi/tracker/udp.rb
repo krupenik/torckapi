@@ -7,12 +7,12 @@ module Torckapi
   module Tracker
     # Implementation of http://www.bittorrent.org/beps/bep_0015.html
     class UDP < Base
-      def announce info_hash, peer_id=SecureRandom.random_bytes(20)
+      def announce(info_hash, peer_id = SecureRandom.random_bytes(20))
         super
         perform_request Announce, announce_request_data(info_hash, peer_id), info_hash
       end
 
-      def scrape info_hashes=[]
+      def scrape(info_hashes = [])
         super
         perform_request Scrape, scrape_request_data(info_hashes), info_hashes
       end
@@ -25,7 +25,7 @@ module Torckapi
       RESPONSE_MIN_LENGTHS = [16, 20, 8, 8].freeze
       RESPONSE_CODES = 0..RESPONSE_CLASSES.length
 
-      def initialize url, options={}
+      def initialize(url, options = {})
         super
         @state = nil
         @connection_id = nil
@@ -40,17 +40,17 @@ module Torckapi
         @state == :connecting
       end
 
-      def perform_request action, data, *args
+      def perform_request(action, data, *args)
         response = communicate action, data
 
         RESPONSE_CLASSES[response[:code]].from_udp(*args, response[:data])
       end
 
-      def announce_request_data info_hash, peer_id
+      def announce_request_data(info_hash, peer_id)
         [[info_hash].pack('H*'), peer_id, [0, 0, 0, 0, 0, 0, -1, 0].pack('Q>3L>4S>')].join
       end
 
-      def scrape_request_data info_hashes
+      def scrape_request_data(info_hashes)
         info_hashes.map { |i| [i].pack('H*') }.join
       end
 
@@ -62,7 +62,7 @@ module Torckapi
         @state, @connection_id = nil, response[:data]
       end
 
-      def communicate action, data=nil
+      def communicate(action, data = nil)
         @socket ||= UDPSocket.new
 
         tries = 0
@@ -88,7 +88,7 @@ module Torckapi
         end
       end
 
-      def process_response response, transaction_id
+      def process_response(response, transaction_id)
         check_transaction_id response, transaction_id
         response_code = extract_response_code response
         check_response_length response, response_code
@@ -96,11 +96,11 @@ module Torckapi
         {code: response_code, data: response[8..-1]}
       end
 
-      def check_transaction_id response, transaction_id
+      def check_transaction_id(response, transaction_id)
         raise TransactionIdMismatchError, response if transaction_id != response[4..7]
       end
 
-      def extract_response_code response
+      def extract_response_code(response)
         response_code, response_code_le = [response[0..3]].flat_map { |x| [x.unpack('L>')[0], x.unpack('L<')[0]] }
 
         unless RESPONSE_CODES.include?(response_code)
@@ -110,7 +110,7 @@ module Torckapi
         response_code
       end
 
-      def check_response_length response, response_code
+      def check_response_length(response, response_code)
         raise MalformedResponseError, response if RESPONSE_MIN_LENGTHS[response_code] > response.length
       end
     end

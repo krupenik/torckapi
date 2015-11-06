@@ -16,7 +16,7 @@ module Torckapi
       # @param info_hashes [String, Array<String>] a 40-char hexadecimal string or an array of those
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Error] response
-      def self.from_udp info_hashes, data
+      def self.from_udp(info_hashes, data)
         new(info_hashes, data || "")
       end
 
@@ -26,7 +26,7 @@ module Torckapi
 
       private
 
-      def initialize info_hashes, message
+      def initialize(info_hashes, message)
         @info_hashes = [*info_hashes]
         @message = message
       end

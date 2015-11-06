@@ -5,7 +5,7 @@ module Torckapi
     class Base
       protected
 
-      def self.bdecode_and_check data, key
+      def self.bdecode_and_check(data, key)
         begin
           bdecoded_data = BEncode.load(data)
         rescue BEncode::DecodeError
