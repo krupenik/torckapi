@@ -38,7 +38,11 @@ module Torckapi
 
         begin
           timeout = @options[:timeout]
-          request = Net::HTTP::Get.new(url.to_s)
+          if Gem::Version.new(RUBY_VERSION) <= Gem::Version.new('1.9.3')
+              request = Net::HTTP::Get.new(url.to_s)
+          else
+              request = Net::HTTP::Get.new(url)
+          end
           Net::HTTP.start(url.host, url.port, open_timeout: timeout, read_timeout: timeout) do |http|
             http.request(request).body
           end
