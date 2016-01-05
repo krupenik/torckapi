@@ -9,10 +9,10 @@ module Torckapi
         begin
           bdecoded_data = BEncode.load(data)
         rescue BEncode::DecodeError
-          raise Torckapi::Tracker::MalformedResponseError
+          raise Torckapi::Tracker::MalformedResponseError, "Can't decode '%s'" % data
         end
 
-        raise Torckapi::Tracker::MalformedResponseError unless bdecoded_data.is_a? Hash and bdecoded_data.has_key? key
+        raise Torckapi::Tracker::MalformedResponseError, "bdecoded data: '%s'" % bdecoded_data + " didn't contain key: '%s'" % key unless bdecoded_data.is_a? Hash and bdecoded_data.has_key? key
 
         bdecoded_data
       end
