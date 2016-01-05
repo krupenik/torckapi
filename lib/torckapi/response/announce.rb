@@ -20,7 +20,7 @@ module Torckapi
       # @param info_hash [String] 40-char hexadecimal string
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Announce] response
-      def self.from_udp info_hash, data
+      def self.from_udp(info_hash, data)
         new info_hash, *data[4..11].unpack('L>2'), peers_from_compact(data[12..-1] || '')
       end
 
@@ -29,21 +29,21 @@ module Torckapi
       # @param data [String] HTTP response data (bencoded)
       # @return [Torckapi::Response::Announce] response
       # @raise [Torckapi::Tracker::MalformedResponseError]
-      def self.from_http info_hash, data
+      def self.from_http(info_hash, data)
         bdecoded_data = bdecode_and_check data, 'peers'
         new info_hash, *bdecoded_data.values_at('incomplete', 'complete'), peers_from_compact(bdecoded_data['peers'])
       end
 
       private
 
-      def initialize info_hash, leechers, seeders, peers
+      def initialize(info_hash, leechers, seeders, peers)
         @info_hash = info_hash
         @leechers = leechers
         @seeders = seeders
         @peers = peers
       end
 
-      def self.peers_from_compact data
+      def self.peers_from_compact(data)
         # ipv4 address + tcp/udp port = 6 bytes
         data.unpack('a6' * (data.length / 6)).map { |i| [IPAddr.ntop(i[0..3]), i[4..5].unpack('S>')[0]] }
       end

@@ -12,7 +12,7 @@ module Torckapi
       # @param data [String] UDP response data (omit action and transaction_id)
       # @return [Torckapi::Response::Scrape] response
       # @raise [Torckapi::Tracker::MalformedResponseError]
-      def self.from_udp info_hashes, data
+      def self.from_udp(info_hashes, data)
         raise Torckapi::Tracker::MalformedResponseError if data.length != info_hashes.count * 12
         new Hash[info_hashes.zip(data.unpack('a12' * info_hashes.count).map { |i| counts_unpacked(i) })]
       end
@@ -21,26 +21,26 @@ module Torckapi
       # @param data [String] HTTP response data (bencoded)
       # @return [Torckapi::Response::Scrape] response
       # @raise [Torckapi::Tracker::MalformedResponseError]
-      def self.from_http data
+      def self.from_http(data)
         bdecoded_data = bdecode_and_check data, 'files'
         new Hash[bdecoded_data['files'].map { |info_hash, counts| [info_hash.unpack('H*').join, counts_translated(counts) ]}]
       end
 
       private
 
-      def self.counts_unpacked data
+      def self.counts_unpacked(data)
         counts_with_block(data) { |data| data.unpack('L>3').map(&:to_i) }
       end
 
-      def self.counts_translated data
+      def self.counts_translated(data)
         counts_with_block(data) { |data| data.values_at('complete', 'downloaded', 'incomplete') }
       end
 
-      def self.counts_with_block data, &block
+      def self.counts_with_block(data, &block)
         Hash[[:seeders, :completed, :leechers].zip(yield data)]
       end
 
-      def initialize data
+      def initialize(data)
         @data = data
       end
     end

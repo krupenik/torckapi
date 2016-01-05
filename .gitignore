@@ -1,3 +1,5 @@
 .yardoc
 doc
-
+Gemfile.lock
+coverage
+Guardfile

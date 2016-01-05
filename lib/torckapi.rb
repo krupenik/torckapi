@@ -12,16 +12,17 @@ module Torckapi
   # @param tracker_url [String] tracker announce url
   # @param options [Hash] defaults to \\{timeout: 15, tries: 3}
   # @return [Torckapi::Tracker::Base] tracker interface instance
-  def self.tracker tracker_url, options={}
+  def self.tracker(tracker_url, options = {})
     url = URI.parse tracker_url
 
     case url.scheme
     when "http"
-      Torckapi::Tracker::HTTP.new url, options
+      Torckapi::Tracker::HTTP.new(url, options)
     when "udp"
-      Torckapi::Tracker::UDP.new url, options
+      Torckapi::Tracker::UDP.new(url, options)
     else
-      raise InvalidSchemeError, "'#{tracker_url}' cannot be recognized as valid tracker url"
+      raise Torckapi::Tracker::InvalidSchemeError, \
+        "'#{tracker_url}' cannot be recognized as valid tracker url"
     end
   end
 end
