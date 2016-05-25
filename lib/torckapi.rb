@@ -21,7 +21,7 @@ module Torckapi
     when "udp"
       Torckapi::Tracker::UDP.new url, options
     else
-      raise InvalidSchemeError, "'#{tracker_url}' cannot be recognized as valid tracker url"
+      raise Tracker::InvalidSchemeError, "'#{tracker_url}' cannot be recognized as valid tracker url"
     end
   end
 end
