@@ -1,10 +1,13 @@
 GEM
   remote: https://rubygems.org/
   specs:
-    bencode (0.8.0)
+    bencode (0.8.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   bencode
+
+BUNDLED WITH
+   1.11.2
