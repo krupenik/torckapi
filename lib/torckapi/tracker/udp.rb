@@ -1,5 +1,4 @@
 require 'socket'
-require 'timeout'
 require 'securerandom'
 require 'torckapi/tracker/base'
 
@@ -64,29 +63,29 @@ module Torckapi
 
       def communicate(action, data = nil)
         @socket ||= UDPSocket.new
-
         tries = 0
         response = nil
-
         begin
           connect
           transaction_id = SecureRandom.random_bytes(4)
           packet = [@connection_id, [action].pack('L>'), transaction_id, data].join
-
-          Timeout::timeout(@options[:timeout], CommunicationTimeoutError) do
             @socket.send(packet, 0, @url.host, @url.port)
-            response = process_response @socket.recvfrom(65536)[0], transaction_id
-            @communicated_at = Time.now
-          end
+            ready = IO.select([@socket], nil, nil, @options[:timeout])
+            if ready
+              response = process_response @socket.recvfrom(65536)[0], transaction_id
+              @communicated_at = Time.now
+            else
+              raise CommunicationTimeoutError
+            end
           response
         rescue CommunicationTimeoutError, LittleEndianResponseError => e
           if (tries += 1) <= @options[:tries]
-            retry
+           retry
           else
-            raise CommunicationFailedError
+           raise CommunicationFailedError
           end
-        end
-      end
+         end
+       end
 
       def process_response(response, transaction_id)
         check_transaction_id response, transaction_id
