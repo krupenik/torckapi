@@ -1,5 +1,4 @@
 require 'socket'
-require 'timeout'
 require 'securerandom'
 require 'torckapi/tracker/base'
 
@@ -9,12 +8,12 @@ module Torckapi
     class UDP < Base
       def announce(info_hash, peer_id = SecureRandom.random_bytes(20))
         super
-        perform_request Announce, announce_request_data(info_hash, peer_id), info_hash
+        perform_request(Announce, announce_request_data(info_hash, peer_id), info_hash)
       end
 
       def scrape(info_hashes = [])
         super
-        perform_request Scrape, scrape_request_data(info_hashes), info_hashes
+        perform_request(Scrape, scrape_request_data(info_hashes), info_hashes)
       end
 
       private
@@ -41,7 +40,7 @@ module Torckapi
       end
 
       def perform_request(action, data, *args)
-        response = communicate action, data
+        response = communicate(action, data)
 
         RESPONSE_CLASSES[response[:code]].from_udp(*args, response[:data])
       end
@@ -58,40 +57,39 @@ module Torckapi
         return if connected? || connecting?
 
         @state, @connection_id = :connecting, [0x041727101980].pack('Q>')
-        response = communicate Connect
+        response = communicate(Connect)
         @state, @connection_id = nil, response[:data]
       end
 
       def communicate(action, data = nil)
         @socket ||= UDPSocket.new
-
         tries = 0
         response = nil
-
         begin
           connect
           transaction_id = SecureRandom.random_bytes(4)
           packet = [@connection_id, [action].pack('L>'), transaction_id, data].join
-
-          Timeout::timeout(@options[:timeout], CommunicationTimeoutError) do
-            @socket.send(packet, 0, @url.host, @url.port)
-            response = process_response @socket.recvfrom(65536)[0], transaction_id
+          @socket.send(packet, 0, @url.host, @url.port)
+          if IO.select([@socket], nil, nil, @options[:timeout])
+            response = process_response(@socket.recvfrom(65536)[0], transaction_id)
             @communicated_at = Time.now
+          else
+            raise CommunicationTimeoutError
           end
-          response
+          return response
         rescue CommunicationTimeoutError, LittleEndianResponseError => e
           if (tries += 1) <= @options[:tries]
-            retry
+           retry
           else
-            raise CommunicationFailedError
+           raise CommunicationFailedError
           end
-        end
-      end
+         end
+       end
 
       def process_response(response, transaction_id)
-        check_transaction_id response, transaction_id
-        response_code = extract_response_code response
-        check_response_length response, response_code
+        check_transaction_id(response, transaction_id)
+        response_code = extract_response_code(response)
+        check_response_length(response, response_code)
 
         {code: response_code, data: response[8..-1]}
       end
