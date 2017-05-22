@@ -69,15 +69,14 @@ module Torckapi
           connect
           transaction_id = SecureRandom.random_bytes(4)
           packet = [@connection_id, [action].pack('L>'), transaction_id, data].join
-            @socket.send(packet, 0, @url.host, @url.port)
-            ready = IO.select([@socket], nil, nil, @options[:timeout])
-            if ready
-              response = process_response @socket.recvfrom(65536)[0], transaction_id
-              @communicated_at = Time.now
-            else
-              raise CommunicationTimeoutError
-            end
-          response
+          @socket.send(packet, 0, @url.host, @url.port)
+          if IO.select([@socket], nil, nil, @options[:timeout])
+            response = process_response @socket.recvfrom(65536)[0], transaction_id
+            @communicated_at = Time.now
+          else
+            raise CommunicationTimeoutError
+          end
+          return response
         rescue CommunicationTimeoutError, LittleEndianResponseError => e
           if (tries += 1) <= @options[:tries]
            retry
