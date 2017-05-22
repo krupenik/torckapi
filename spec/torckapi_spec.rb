@@ -14,6 +14,7 @@ describe Torckapi do
     @udp = double
     allow(UDPSocket).to receive(:new).and_return @udp
     allow(@udp).to receive(:send).and_return @udp
+    allow(IO).to receive(:select).and_return true
 
     allow(SecureRandom).to receive(:random_bytes).and_call_original
   end
