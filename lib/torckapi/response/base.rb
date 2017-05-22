@@ -7,7 +7,7 @@ module Torckapi
 
       def self.bdecode_and_check(data, key)
         begin
-          bdecoded_data = BEncode.load(data, :ignore_trailing_junk => true)
+          bdecoded_data = BEncode.load(data)
         rescue BEncode::DecodeError
           raise Torckapi::Tracker::MalformedResponseError, "Can't decode '%s'" % data
         end
